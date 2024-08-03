@@ -1,38 +1,40 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sentiment Analysis</title>
-</head>
-<body>
-    <h1>Sentiment Analysis</h1>
-    <form id="review-form">
-        <textarea id="review" name="review" rows="4" cols="50"></textarea><br>
-        <button type="button" onclick="analyzeSentiment()">Analyze</button>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="mt-5">
+    <h1 class="text-center">Sentiment Analysis</h1>
+    <form id="sentiment-form">
+        <div class="form-group">
+            <label for="review">Enter Text:</label>
+            <textarea class="form-control" id="review" rows="5"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Analyze</button>
     </form>
-    <h2>Result:</h2>
-    <p id="result"></p>
+    <div id="result" class="mt-4"></div>
+</div>
 
-    <script>
-        async function analyzeSentiment() {
-    console.log("Analyze button clicked");  // Debugging log
-    const review = document.getElementById('review').value;
-    const response = await fetch('/predict', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'  // Ensure the header is correct
-        },
-        body: JSON.stringify({ review })  // Ensure the data is correctly formatted as JSON
+<script>
+    document.getElementById('sentiment-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const review = document.getElementById('review').value;
+
+        fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ review })
+        })
+        .then(response => response.json())
+        .then(data => {
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<h3 class="text-center">${data.sentiment}</h3>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="alert alert-danger" role="alert">Error analyzing sentiment.</div>`;
+        });
     });
-    if (response.ok) {
-        const result = await response.json();
-        document.getElementById('result').innerText = result.sentiment;
-    } else {
-        document.getElementById('result').innerText = 'Error analyzing sentiment';
-    }
-}
-
-    </script>
-</body>
-</html>
+</script>
+{% endblock %}

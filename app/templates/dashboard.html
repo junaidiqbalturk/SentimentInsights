@@ -1,12 +1,47 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard</title>
-</head>
-<body>
-    <h1>Dashboard</h1>
-    <img src="data:image/png;base64,{{ plot_url }}" alt="Sentiment Distribution">
-</body>
-</html>
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="mt-5">
+    <h1 class="text-center">Sentiment Analysis Dashboard</h1>
+    <form id="sentiment-form">
+        <div class="form-group">
+            <label for="review">Enter Text:</label>
+            <textarea class="form-control" id="review" rows="5"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary btn-block">Analyze</button>
+    </form>
+    <div id="result" class="mt-4"></div>
+</div>
+
+<script>
+    document.getElementById('sentiment-form').addEventListener('submit', function(event) {
+        event.preventDefault();
+        const review = document.getElementById('review').value;
+
+        fetch('/predict', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ review })
+        })
+        .then(response => response.json())
+        .then(data => {
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `
+                <h3 class="text-center">Sentiment: ${data.sentiment}</h3>
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <h5 class="card-title">Review</h5>
+                        <p class="card-text">${review}</p>
+                    </div>
+                </div>`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            let resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="alert alert-danger" role="alert">Error analyzing sentiment.</div>`;
+        });
+    });
+</script>
+{% endblock %}
