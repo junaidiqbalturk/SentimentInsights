@@ -1,53 +1,49 @@
 import pandas as pd
-import re
-import nltk
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score, classification_report
+from nltk.corpus import stopwords, wordnet
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize import word_tokenize
 import joblib
+import nltk
 
+# Ensure required NLTK packages are downloaded
 nltk.download('stopwords')
-nltk.download('wordset')
+nltk.download('wordnet')
+nltk.download('punkt')
 
-lemmatizer = WordNetLemmatizer()
-stop_words = set(stopwords.words('english'))
 
+# Preprocess text function
 def preprocess_text(text):
-    # removing punctuation and special characters
-    text = re.sub('[^a-zA-Z]', ' ', text)
-    # converting text to lower case
-    text = text.lower()
-    #spiliting the texts in tokens
-    words = text.split()
-    #removing stopwords and lemmatize
-    words = [lemmatizer.lemmatize(word) for word in words if word not in stop_words]
+    lemmatizer = WordNetLemmatizer()
+    words = word_tokenize(text)
+    words = [lemmatizer.lemmatize(word.lower()) for word in words if word.isalpha()]
     return ' '.join(words)
 
-def train_mode():
+
+def train_model():
     df = pd.read_csv('dataset/imdb_review.csv')
     df['cleaned_text'] = df['review'].apply(preprocess_text)
     X = df['cleaned_text']
-    Y = df['sentiment'].apply(lambda x: 1 if x == 'positive' else 0)
+    y = df['sentiment'].apply(lambda x: 1 if x == 'positive' else 0)
 
     tfidf_vectorizer = TfidfVectorizer(max_features=5000)
     X = tfidf_vectorizer.fit_transform(X).toarray()
 
-    X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
     model = LogisticRegression()
     model.fit(X_train, y_train)
-    y_pred = model.predict(X_test)
 
-    #printing on the console to see the accuracy
+    y_pred = model.predict(X_test)
     print("Accuracy:", accuracy_score(y_test, y_pred))
-    print("Classification_report",report(y_test,y_pred))
+    print(classification_report(y_test, y_pred))
 
     joblib.dump(model, 'models/sentiment_model.pkl')
     joblib.dump(tfidf_vectorizer, 'models/tfidf_vectorizer.pkl')
 
 
-if __name__ == '__main__':
-    train_mode()
-
+if __name__ == "__main__":
+    train_model()
