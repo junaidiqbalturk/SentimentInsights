@@ -45,4 +45,9 @@ def train_mode():
     print("Classification_report",report(y_test,y_pred))
 
     joblib.dump(model, 'models/sentiment_model.pkl')
+    joblib.dump(tfidf_vectorizer, 'models/tfidf_vectorizer.pkl')
+
+
+if __name__ == '__main__':
+    train_mode()
 
