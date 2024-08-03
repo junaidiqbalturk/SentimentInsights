@@ -10,8 +10,8 @@ from .utils import preprocess_text
 
 main = Blueprint('main',__name__)
 
-model = joblib.load('models/sentiment_model_pkl')
-vectorizer = joblib.load('models/sentiment_vectorizer_pkl')
+model = joblib.load('models/sentiment_model.pkl')
+vectorizer = joblib.load('models/sentiment_vectorizer.pkl')
 
 @main.route('/')
 def index():
